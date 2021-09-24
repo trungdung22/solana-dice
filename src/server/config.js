@@ -1,6 +1,6 @@
 // @flow
 
-import {BpfLoader, NativeLoader, Account} from '@solana/web3.js';
+import {BpfLoader, NativeLoader, Account, PublicKey} from '@solana/web3.js';
 import fs from 'mz/fs';
 import path from 'path';
 
@@ -14,7 +14,7 @@ import {newAccountWithAirdrop} from '../util/new-account-with-airdrop';
  */
 export async function findDashboard(connection): Promise<Object> {
   const store = new Store();
-  let native = !!process.env.NATIVE;
+  let native = !!process.env.NATIVE || false;
 
   try {
     const config = await store.load('../../../server-store/config.json');
@@ -36,37 +36,34 @@ export async function findDashboard(connection): Promise<Object> {
     console.log('findDashboard:', err.message);
   }
 
-  const loaderAccount = await newAccountWithAirdrop(connection, 10000);
+  // const loaderAccount = await newAccountWithAirdrop(connection, 10000);
 
   let programId;
-  if (native) {
-    console.log('Using native program');
-    programId = await NativeLoader.load(connection, loaderAccount, 'dice');
-  } else {
-    console.log('Using BPF program');
-    const elf = await fs.readFile(
-      path.join(__dirname, '..', '..', 'server-store', 'program', 'dice.so'),
-    );
+  // if (native) {
+  //   console.log('Using native program');
+  //   programId = await NativeLoader.load(connection, loaderAccount, 'dice');
+  // } else {
+  //   console.log('Using BPF program');
+  //   const elf = await fs.readFile(
+  //     path.join(__dirname, '..', '..', 'server-store', 'program', 'dice.so'),
+  //   );
 
-    let attempts = 5;
-    while (attempts > 0) {
-      try {
-        console.log('Loading BPF program...');
-        programId = await BpfLoader.load(connection, loaderAccount, elf);
-        break;
-      } catch (err) {
-        attempts--;
-        console.log(
-          `Error loading BPF program, ${attempts} attempts remaining:`,
-          err.message,
-        );
-      }
-    }
-  }
-  if (!programId) {
-    throw new Error('Unable to load program');
-  }
-
+  //   let attempts = 5;
+  //   while (attempts > 0) {
+  //     try {
+  //       console.log('Loading BPF program...');
+  //       programId = await BpfLoader.load(connection, loaderAccount, elf);
+  //       break;
+  //     } catch (err) {
+  //       attempts--;
+  //       console.log(
+  //         `Error loading BPF program, ${attempts} attempts remaining:`,
+  //         err.message,
+  //       );
+  //     }
+  //   }
+  // }
+  programId = new PublicKey("F4zavojm5dWM6TF2xxxKrCY25Tf857LRFRFxA7jtDJrH");
   console.log('Dashboard programId:', programId.toBase58());
 
   const casinoAccount = await newAccountWithAirdrop(connection, 5000);
